@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ImageView
+        android:id="@+id/ivBackArrow"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/ic_back_arrow" />
+
+    <ImageView
+        android:id="@+id/ivFragmentUserProfileImage"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/ivBackArrow"
+        android:src="@drawable/ic_launcher" />
+
+    <TextView
+        android:id="@+id/tvFragmentUserProfileName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/ivFragmentUserProfileImage"
+        android:textStyle="bold"
+        android:text="@string/user_label" />
+
+    <TextView
+        android:id="@+id/tvFragmentUserScreenName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/ivFragmentUserProfileImage"
+        android:layout_toRightOf="@+id/ivFragmentUserProfileImage"
+        android:text="@string/foo_label" />
+
+    <EditText
+        android:id="@+id/etComposeTweet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/ivBackArrow"
+        android:ems="10"
+        android:hint="@string/compose_label" >
+
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/btnTweet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/tvFragmentUserScreenName"
+        android:text="@string/tweet_label" />
+
+</RelativeLayout>
