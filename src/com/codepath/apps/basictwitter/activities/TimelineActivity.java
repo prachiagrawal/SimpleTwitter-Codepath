@@ -6,12 +6,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -22,30 +29,30 @@ import com.codepath.apps.basictwitter.fragments.ComposeTweetFragment;
 import com.codepath.apps.basictwitter.fragments.ComposeTweetFragment.ComposeTweetDialogListener;
 import com.codepath.apps.basictwitter.helpers.EndlessScrollListener;
 import com.codepath.apps.basictwitter.helpers.TwitterClient;
-import com.codepath.apps.basictwitter.models.Tweet;
-import com.codepath.apps.basictwitter.models.User;
+import com.codepath.apps.basictwitter.models.SavedTweet;
+import com.codepath.apps.basictwitter.models.SavedUser;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import eu.erikw.PullToRefreshListView;
 import eu.erikw.PullToRefreshListView.OnRefreshListener;
 
-public class TimelineActivity extends FragmentActivity implements ComposeTweetDialogListener{
+public class TimelineActivity extends FragmentActivity implements ComposeTweetDialogListener {
 	private TwitterClient client;
-	private ArrayList<Tweet> _tweets;
-	private ArrayAdapter<Tweet> aTweets;
+	private ArrayList<SavedTweet> _tweets;
+	private ArrayAdapter<SavedTweet> aTweets;
 	private PullToRefreshListView lvTweets;
-	private User user;
+	private SavedUser user;
 		
 	private long _latestTweetId = -1;
 	private long _oldestTweetId = -1;
-	
+		
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
 		client = TwitterApplication.getRestClient();
 		lvTweets = (PullToRefreshListView) findViewById(R.id.lvTweets);
-		_tweets = new ArrayList<Tweet>();
+		_tweets = new ArrayList<SavedTweet>();
 		aTweets = new TweetArrayAdapter(this, _tweets);
 		lvTweets.setAdapter(aTweets);
 		
@@ -62,15 +69,41 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
         lvTweets.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // Your code to refresh the list here.
+            	if (!isNetworkAvailable()) {
+            		showInternetMissingError();
+            		lvTweets.onRefreshComplete();
+            		return;
+            	}
                 // Make sure you call listView.onRefreshComplete() when
                 // once the network request has completed successfully.
         		if (_tweets != null && _tweets.size() != 0) {
-        			_latestTweetId = _tweets.get(0).getUid();
+        			_latestTweetId = _tweets.get(0).getTweetId();
         		}
             	populateTimeline(_latestTweetId, null);
             }
         });
+        
+        lvTweets.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				showDetailView(position);
+			}
+		});
+	}
+	
+	protected void showDetailView(int position) {
+		Intent i = new Intent(this, TweetDetailActivity.class);
+		i.putExtra("tweet", _tweets.get(position));
+		i.putExtra("user", user);
+		startActivity(i);
+	}
+
+	public Boolean isNetworkAvailable() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
 	}
 	
 	@Override
@@ -91,31 +124,47 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 	    }
 	}
 	
+	private void showInternetMissingError() {
+		Toast.makeText(getApplication(), "No internet connection available", Toast.LENGTH_LONG).show();
+	}
+	
 	private void customLoadMoreDataFromApi(int page, int totalItemsCount) {
 		if (_tweets != null && _tweets.size() != 0) {
-			_oldestTweetId = _tweets.get(_tweets.size() - 1).getUid();
+			_oldestTweetId = _tweets.get(_tweets.size() - 1).getTweetId();
 		}
+		if (!isNetworkAvailable()) {
+			populateTimeline(_oldestTweetId);
+			return;
+    	}
 		populateTimeline(null, _oldestTweetId);
 	}
 	
+	private void populateTimeline(Long maxId) {
+		ArrayList<SavedTweet> tweets = (ArrayList<SavedTweet>) SavedTweet.getPaginatedList(maxId);
+		if (tweets != null && !tweets.isEmpty()) {
+			_tweets.addAll(tweets);
+			aTweets.notifyDataSetChanged();	
+		} else {
+			showInternetMissingError();
+		}
+	}
+	
 	private void populateTimeline(Long sinceId, Long maxId) {
-		//if (page == 0) {
-		//	_oldestTweetId = -1;
-		//	aTweets.clear();
-		//}
-		
 		client.getHomeTimeline(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
-				ArrayList<Tweet> tweets = Tweet.fromJson(jsonArray);				
+				ArrayList<SavedTweet> tweets = SavedTweet.fromJson(jsonArray);	
+				//SavedUser.saveAll(tweets); // Persist for using when there is no internet connection
+				//SavedTweet.saveAll(tweets); // Persist for using when there is no internet connection
+
 				if (tweets != null && !tweets.isEmpty()) {
-					if (_tweets == null || _tweets.size() == 0) {
-						aTweets.addAll(tweets);
-					} else if (_tweets.get(_tweets.size() - 1).getUid() > tweets.get(0).getUid()) {
+					if (_tweets == null || _tweets.size() == 0 ||
+					    (_tweets.get(_tweets.size() - 1).getTweetId() > tweets.get(0).getTweetId())) {
+						// If this is the first load, or
 						// If the oldest (bottom most) tweet in the listview happened after the
 						// first tweet in the new list, append the new list at the end
 						aTweets.addAll(tweets);
-					} else if (_tweets.get(0).getUid() < tweets.get(tweets.size() - 1).getUid()) {
+					} else if (_tweets.get(0).getTweetId() < tweets.get(tweets.size() - 1).getTweetId()) {
 						// If the newest (topmost) tweet already in the listview happened before the
 						// last tweet in the new list, insert the new list at the beginning
 						_tweets.addAll(0, tweets);
@@ -159,7 +208,7 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 		client.getUser(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONObject json) {
-				user = User.fromJson(json);
+				user = SavedUser.fromJson(json);
 			}
 			
 			@Override
@@ -170,24 +219,27 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 		}, screenName);
 	}
 	
-	private void composeTweet(User user) {
+	private void composeTweet(SavedUser user) {
 		FragmentManager fm = getSupportFragmentManager();
 		ComposeTweetFragment composeTweetDialog = ComposeTweetFragment.newInstance(
-				user.getProfileImageUrl(), user.getName(), user.getScreenName());
+				user.getProfileImageUrl(), user.getName(), user.getScreenName(), null);
 		composeTweetDialog.show(fm, "fragment_compose_tweet");
 	}
 
 	@Override
 	public void onFinishComposeDialog(String inputText) {
-	  	Toast.makeText(this, "Hi, " + inputText, Toast.LENGTH_SHORT).show();
 	  	client.postStatus(new JsonHttpResponseHandler() {
 	  		@Override
 	  		public void onSuccess(JSONObject json) {
-	  			Tweet tweet = Tweet.fromJson(json);
+	  			if (!isNetworkAvailable()) {
+	  				showInternetMissingError();
+	  				return;
+	  			}
+	  			SavedTweet tweet = SavedTweet.fromJson(json);
 	  			if (_tweets != null && _tweets.size() != 0) {
-        			_latestTweetId = _tweets.get(0).getUid();
+        			_latestTweetId = _tweets.get(0).getTweetId();
         		}
-	  			populateTimeline(_latestTweetId, tweet.getUid()+1);
+	  			populateTimeline(_latestTweetId, tweet.getTweetId()+1);
 	  		}
 	  		
 			@Override

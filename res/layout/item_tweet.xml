@@ -3,7 +3,7 @@
     android:padding="5dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-
+ 
     <ImageView
         android:id="@+id/ivProfileImage"
         android:layout_width="40dp"
@@ -31,6 +31,7 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/tvUserProfileName"
         android:layout_marginLeft="5sp"
+        android:textColor="#777777"
         android:text="@string/foo_label" />
 
     <TextView
@@ -40,9 +41,8 @@
         android:layout_alignLeft="@+id/tvUserProfileName"
         android:layout_below="@+id/tvUserProfileName"
         android:autoLink="all"
-        android:linksClickable="true"
-        android:text="This is the tweet body" />
-
+        android:linksClickable="false"
+        android:text="@string/tweet_text" />
 
     <TextView
         android:id="@+id/tvCreatedAt"
@@ -50,6 +50,49 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:text="Timestamp" />
+        android:text="@string/timestamp_label"
+        android:textColor="#777777" />
+
+    <ImageView
+        android:id="@+id/ivMediaImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="fitStart"
+        android:adjustViewBounds="true"
+        android:layout_alignLeft="@+id/tvBody"
+        android:layout_alignRight="@+id/tvCreatedAt"
+        android:layout_below="@+id/tvBody"
+        android:layout_marginTop="5dp"
+        android:src="@drawable/ic_launcher" />
+
+    <ImageView
+        android:id="@+id/ivRetweetIcon"     
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="7dp"
+        android:layout_below="@+id/ivMediaImage"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:src="@drawable/rewteet_symbol" />
+
+    <ImageView
+        android:id="@+id/ivReplyIcon"
+       	android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:adjustViewBounds="true"
+        android:layout_toLeftOf="@+id/ivRetweetIcon"
+        android:layout_alignTop="@+id/ivRetweetIcon"
+        android:layout_marginRight="70dp"
+        android:src="@drawable/reply_arrow" />
+
+    <ImageView
+        android:id="@+id/ivFavoriteIcon"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:adjustViewBounds="true"
+        android:layout_toRightOf="@+id/ivRetweetIcon"
+        android:layout_alignTop="@+id/ivRetweetIcon"
+        android:layout_marginLeft="70dp"
+        android:src="@drawable/favorite_star" />
 
 </RelativeLayout>

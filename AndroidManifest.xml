@@ -9,27 +9,27 @@
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name="com.activeandroid.app.Application"
+        android:name=".TwitterApplication"
         android:allowBackup="true"
         android:icon="@drawable/twitter_icon"
         android:label="@string/app_name"
         android:theme="@style/CustomActionBarTheme" >
-        
         <meta-data
             android:name="AA_DB_NAME"
-            android:value="RestClient.db" />
+            android:value="TwitterClient.db" />
         <meta-data
             android:name="AA_DB_VERSION"
             android:value="1" />
 
         <activity
-            android:name="com.codepath.apps.basictwitter.activities.LoginActivity"
-            android:noHistory="true"
-            android:icon="@drawable/twitter_action_bar"
-            android:label="" >
+            android:name=".activities.LoginActivity"
+            android:icon="@drawable/twitter_new_icon"
+            android:label=""
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -47,9 +47,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.codepath.apps.basictwitter.activities.TimelineActivity"
+            android:name=".activities.TimelineActivity"
             android:icon="@drawable/twitter_action_bar"
             android:label="" >
+        </activity>
+        <activity
+            android:name="com.codepath.apps.basictwitter.activities.TweetDetailActivity"
+            android:icon="@drawable/twitter_action_bar"          
+            android:label="@string/tweet_label" >
         </activity>
     </application>
 
