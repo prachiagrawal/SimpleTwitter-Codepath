@@ -3,7 +3,7 @@ Simple Twitter Client
 
 A simple twitter client app for Android.
 
-Time spent: In total, ~12 hours.
+Time spent: In total, ~23 hours.
 
 Completed user stories:
 
