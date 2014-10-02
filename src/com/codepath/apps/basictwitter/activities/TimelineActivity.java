@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -20,7 +19,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 import com.codepath.apps.basictwitter.R;
 import com.codepath.apps.basictwitter.TwitterApplication;
@@ -28,6 +26,7 @@ import com.codepath.apps.basictwitter.adapters.TweetArrayAdapter;
 import com.codepath.apps.basictwitter.fragments.ComposeTweetFragment;
 import com.codepath.apps.basictwitter.fragments.ComposeTweetFragment.ComposeTweetDialogListener;
 import com.codepath.apps.basictwitter.helpers.EndlessScrollListener;
+import com.codepath.apps.basictwitter.helpers.NetworkUtils;
 import com.codepath.apps.basictwitter.helpers.TwitterClient;
 import com.codepath.apps.basictwitter.models.SavedTweet;
 import com.codepath.apps.basictwitter.models.SavedUser;
@@ -69,8 +68,8 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
         lvTweets.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh() {
-            	if (!isNetworkAvailable()) {
-            		showInternetMissingError();
+            	if (!NetworkUtils.isNetworkAvailable((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE))) {
+        			NetworkUtils.showInternetMissingError(getApplication());
             		lvTweets.onRefreshComplete();
             		return;
             	}
@@ -98,13 +97,6 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 		i.putExtra("user", user);
 		startActivity(i);
 	}
-
-	public Boolean isNetworkAvailable() {
-	    ConnectivityManager connectivityManager 
-	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-	    return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
-	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -124,15 +116,11 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 	    }
 	}
 	
-	private void showInternetMissingError() {
-		Toast.makeText(getApplication(), "No internet connection available", Toast.LENGTH_LONG).show();
-	}
-	
 	private void customLoadMoreDataFromApi(int page, int totalItemsCount) {
 		if (_tweets != null && _tweets.size() != 0) {
 			_oldestTweetId = _tweets.get(_tweets.size() - 1).getTweetId();
 		}
-		if (!isNetworkAvailable()) {
+		if (!NetworkUtils.isNetworkAvailable((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE))) {
 			populateTimeline(_oldestTweetId);
 			return;
     	}
@@ -145,7 +133,7 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 			_tweets.addAll(tweets);
 			aTweets.notifyDataSetChanged();	
 		} else {
-			showInternetMissingError();
+			NetworkUtils.showInternetMissingError(getApplication());
 		}
 	}
 	
@@ -231,8 +219,8 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 	  	client.postStatus(new JsonHttpResponseHandler() {
 	  		@Override
 	  		public void onSuccess(JSONObject json) {
-	  			if (!isNetworkAvailable()) {
-	  				showInternetMissingError();
+	  			if (!NetworkUtils.isNetworkAvailable((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE))) {
+	  				NetworkUtils.showInternetMissingError(getApplication());
 	  				return;
 	  			}
 	  			SavedTweet tweet = SavedTweet.fromJson(json);

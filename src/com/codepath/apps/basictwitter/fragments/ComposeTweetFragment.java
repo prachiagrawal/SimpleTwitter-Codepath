@@ -1,7 +1,5 @@
 package com.codepath.apps.basictwitter.fragments;
 
-import java.util.List;
-
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
