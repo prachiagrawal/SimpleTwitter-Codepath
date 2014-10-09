@@ -16,5 +16,16 @@
     <string name="title_activity_tweet_detail">TweetDetailActivity</string>
     <string name="char_count">Char count</string>
     <string name="welcome_label">Hello. Welcome to Twitter.</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_profile">Profile</string>
+    <string name="followers_count">FOLLOWERS</string>
+    <string name="count">#</string>
+    <string name="friends_count">FRIENDS</string>
+    <string name="tweets_count">TWEETS</string>
+    <string name="retweets_count">RETWEETS</string>
+    <string name="favorites_count">FAVORITES</string>
+    <string name="tagline_label">Tagline</string>
+    <string name="title_activity_users">UsersActivity</string>
+    <string name="title_activity_search">SearchActivity</string>
 
 </resources>

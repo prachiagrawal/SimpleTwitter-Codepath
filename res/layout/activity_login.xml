@@ -21,7 +21,7 @@
         android:text="@string/login_label" />
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/tvProfileScreenName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -30,10 +30,10 @@
         android:src="@drawable/twitter_action_bar" />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/tvProfileName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView1"
+        android:layout_below="@+id/tvProfileScreenName"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="51dp"
         android:text="@string/welcome_label"

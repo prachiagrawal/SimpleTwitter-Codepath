@@ -1,38 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:padding="5dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
- 
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants"
+    android:padding="5dp" >
+
     <ImageView
         android:id="@+id/ivProfileImage"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:scaleType="centerInside"
-        android:adjustViewBounds="true"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:src="@drawable/ic_launcher" />  
+        android:adjustViewBounds="true"
+        android:onClick="onClickProfileView"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_launcher" />
 
     <TextView
         android:id="@+id/tvUserProfileName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/ivProfileImage"
         android:layout_marginLeft="5sp"
-        android:textStyle="bold"
-        android:text="@string/user_label" />
-        
+        android:layout_toRightOf="@+id/ivProfileImage"
+        android:text="@string/user_label"
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/tvUserScreenName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/tvUserProfileName"
         android:layout_marginLeft="5sp"
-        android:textColor="#777777"
-        android:text="@string/foo_label" />
+        android:layout_toRightOf="@+id/tvUserProfileName"
+        android:text="@string/foo_label"
+        android:textColor="#777777" />
 
     <TextView
         android:id="@+id/tvBody"
@@ -40,6 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/tvUserProfileName"
         android:layout_below="@+id/tvUserProfileName"
+        android:layout_marginBottom="5dp"
         android:autoLink="all"
         android:linksClickable="false"
         android:text="@string/tweet_text" />
@@ -57,42 +60,77 @@
         android:id="@+id/ivMediaImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scaleType="fitStart"
-        android:adjustViewBounds="true"
         android:layout_alignLeft="@+id/tvBody"
         android:layout_alignRight="@+id/tvCreatedAt"
         android:layout_below="@+id/tvBody"
         android:layout_marginTop="5dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitStart"
         android:src="@drawable/ic_launcher" />
 
-    <ImageView
-        android:id="@+id/ivRetweetIcon"     
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginTop="7dp"
-        android:layout_below="@+id/ivMediaImage"
-        android:layout_centerHorizontal="true"
-        android:adjustViewBounds="true"
-        android:src="@drawable/rewteet_symbol" />
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/tvBody"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/ivMediaImage"
+        android:layout_marginTop="2dp"
+        android:shrinkColumns="*"
+        android:stretchColumns="*" >
 
-    <ImageView
-        android:id="@+id/ivReplyIcon"
-       	android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:adjustViewBounds="true"
-        android:layout_toLeftOf="@+id/ivRetweetIcon"
-        android:layout_alignTop="@+id/ivRetweetIcon"
-        android:layout_marginRight="70dp"
-        android:src="@drawable/reply_arrow" />
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
 
-    <ImageView
-        android:id="@+id/ivFavoriteIcon"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:adjustViewBounds="true"
-        android:layout_toRightOf="@+id/ivRetweetIcon"
-        android:layout_alignTop="@+id/ivRetweetIcon"
-        android:layout_marginLeft="70dp"
-        android:src="@drawable/favorite_star" />
+            <ImageView
+                android:id="@+id/ivReplyIcon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="left"
+                android:adjustViewBounds="true"
+                android:src="@drawable/arrow_gray" />
+
+            <ImageView
+                android:id="@+id/ivRetweetIcon"
+                android:layout_width="25dp"
+                android:layout_height="20dp"
+                android:layout_gravity="right"
+                android:adjustViewBounds="true"
+                android:src="@drawable/retweet_gray" />
+
+            <TextView
+                android:id="@+id/tvRetweetCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:paddingLeft="2dp"
+                android:text="@string/count" />
+
+            <ImageView
+                android:id="@+id/ivFavoriteIcon"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_gravity="right"
+                android:adjustViewBounds="true"
+                android:src="@drawable/star_gray" />
+
+            <TextView
+                android:id="@+id/tvFavoriteCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:paddingLeft="2dp"
+                android:text="@string/count" />
+
+            <ImageView
+                android:id="@+id/ivAddContactIcon"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_gravity="right"
+                android:adjustViewBounds="true"
+                android:src="@drawable/add_contact_gray" />
+        </TableRow>
+    </TableLayout>
 
 </RelativeLayout>

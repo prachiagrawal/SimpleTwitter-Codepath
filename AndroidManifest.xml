@@ -49,12 +49,28 @@
         <activity
             android:name=".activities.TimelineActivity"
             android:icon="@drawable/twitter_action_bar"
+            android:theme="@style/myTheme"
             android:label="" >
         </activity>
         <activity
-            android:name="com.codepath.apps.basictwitter.activities.TweetDetailActivity"
-            android:icon="@drawable/twitter_action_bar"          
+            android:name=".activities.TweetDetailActivity"
+            android:icon="@drawable/twitter_action_bar"
             android:label="@string/tweet_label" >
+        </activity>
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:icon="@drawable/twitter_action_bar"
+            android:label="@string/title_profile" >
+        </activity>
+        <activity
+            android:name=".activities.UsersActivity"
+            android:icon="@drawable/twitter_action_bar"
+            android:label="@string/title_activity_users" >
+        </activity>
+        <activity
+            android:name="com.codepath.apps.basictwitter.activities.SearchActivity"
+            android:icon="@drawable/twitter_action_bar"
+            android:label="@string/title_activity_search" >
         </activity>
     </application>
 

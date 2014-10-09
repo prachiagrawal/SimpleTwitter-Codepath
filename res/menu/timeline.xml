@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+                   
+    <item android:id="@+id/action_search"
+          android:orderInCategory="5"
+          android:title="Search"
+          android:icon="@drawable/ic_search"
+          android:showAsAction="always"
+          android:actionViewClass="android.widget.SearchView" />  
+        
+   	 <item
+        android:id="@+id/miProfile"
+        android:orderInCategory="99"
+        android:showAsAction="ifRoom|collapseActionView"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile"/>  
+        
     <item
         android:id="@+id/miCompose"
         android:orderInCategory="100"
-        android:showAsAction="always"
-        android:icon="@drawable/pen_icon"
-        android:title="Compose"/>    
+        android:showAsAction="ifRoom|collapseActionView"
+        android:icon="@drawable/ic_compose"
+        android:title="Compose"/>     
 
 </menu>

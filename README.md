@@ -3,9 +3,10 @@ Simple Twitter Client
 
 A simple twitter client app for Android.
 
-Time spent: In total, ~23 hours.
 
-Completed user stories:
+## Old user stories completed
+
+Time spent: In total, ~23 hours.
 
  * [x] User can sign in to Twitter using OAuth login
  * [x] User can view the tweets from their home timeline
@@ -25,9 +26,30 @@ Completed user stories:
  * [x] User can see embedded image media within the tweet detail view
  * [x] Compose activity is replaced with a modal overlay
 
+
+## New user stories completed
+
+Time spent: In total, ~20 hours. Most time was spent in getting the UI to my liking.
+
+ * [x] User can switch between Timeline and Mention views using tabs.
+ * [x] User can view their home timeline tweets.
+ * [x] User can view the recent mentions of their username.
+ * [x] User can scroll to bottom of either of these lists and new tweets will load ("infinite scroll")
+ * [x] User can navigate to view their own profile
+ * [x] User can see picture, tagline, # of followers, # of following, and tweets on their profile.
+ * [x] User can click on the profile image in any tweet to see another user's profile.
+ * [x] User can see picture, tagline, # of followers, # of following, and tweets of clicked user. Profile view should include that user's timeline
+ * [x] User can view following / followers list through the profile
+ * [x] Robust error handling, check if internet is available, handle error cases, network failures
+ * [x] When a network request is sent, user sees an indeterminate progress indicator
+ * [x] User can click on a tweet to be taken to a "detail view" of that tweet
+ * [x] User can take favorite (and unfavorite) actions on a tweet
+ * [x] Improve the user interface and theme the app to feel twitter branded
+ * [x] User can search for tweets matching a particular query and see results
+
 Walkthrough of all user stories:
 
-![Video Walkthrough](SimpleTwitterClient.gif)
+![Video Walkthrough](TwitterClient.gif)
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 

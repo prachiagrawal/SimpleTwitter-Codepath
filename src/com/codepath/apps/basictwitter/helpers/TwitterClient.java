@@ -50,15 +50,65 @@ public class TwitterClient extends OAuthBaseClient {
 				params.put("max_id", Long.toString(maxId - 1)); // -1 to exclude the tweet with this ID
 			}
 			if ((sinceId != null && sinceId != -1)) {
-				params.put("since_id", Long.toString(sinceId)); // -1 to exclude the tweet with this ID
+				params.put("since_id", Long.toString(sinceId)); // The result doesn't include the tweet with this ID
+			}
+		}
+		client.get(apiUrl, params, handler);
+	}
+		
+	public void getMentionsTimeline(AsyncHttpResponseHandler handler, Long sinceId, Long maxId) {
+		String apiUrl = getApiUrl("statuses/mentions_timeline.json");
+		RequestParams params = null;
+		if ((sinceId != null && sinceId != -1) || (maxId != null && maxId != -1)) {
+			params = new RequestParams();
+			if ((maxId != null && maxId != -1)) {
+				params.put("max_id", Long.toString(maxId - 1)); // -1 to exclude the tweet with this ID
+			}
+			if ((sinceId != null && sinceId != -1)) {
+				params.put("since_id", Long.toString(sinceId)); // The result doesn't include the tweet with this ID
 			}
 		}
 		client.get(apiUrl, params, handler);
 	}
 	
-	public void getPersonalSettings(AsyncHttpResponseHandler handler) {
-		String apiUrl = getApiUrl("account/settings.json");
-		client.get(apiUrl, null, handler);
+	public void getUserTimeline(AsyncHttpResponseHandler handler, Long sinceId, Long maxId, Long userId) {
+		String apiUrl = getApiUrl("statuses/user_timeline.json");
+		RequestParams params = null;
+		if ((sinceId != null && sinceId != -1) 
+				|| (maxId != null && maxId != -1)
+				|| (userId != null && userId != -1)) {
+			params = new RequestParams();
+			if ((maxId != null && maxId != -1)) {
+				params.put("max_id", Long.toString(maxId - 1)); // -1 to exclude the tweet with this ID
+			}
+			if ((sinceId != null && sinceId != -1)) {
+				params.put("since_id", Long.toString(sinceId)); // The result doesn't include the tweet with this ID
+			}
+			if ((userId != null && userId != -1)) {
+				params.put("user_id", Long.toString(userId));
+			}
+		}
+		client.get(apiUrl, params, handler);
+	}	
+	
+	public void getSearchResults(AsyncHttpResponseHandler handler, Long sinceId, Long maxId, String text) {
+		String apiUrl = getApiUrl("search/tweets.json");
+		RequestParams params = null;
+		if ((sinceId != null && sinceId != -1) 
+				|| (maxId != null && maxId != -1)
+				|| (text != null && !text.isEmpty())) {
+			params = new RequestParams();
+			if ((maxId != null && maxId != -1)) {
+				params.put("max_id", Long.toString(maxId - 1)); // -1 to exclude the tweet with this ID
+			}
+			if ((sinceId != null && sinceId != -1)) {
+				params.put("since_id", Long.toString(sinceId)); // The result doesn't include the tweet with this ID
+			}
+			if ((text != null && !text.isEmpty())) {
+				params.put("q", text); // The text query to search for
+			}
+		}
+		client.get(apiUrl, params, handler);
 	}
 	
 	public void getUser(AsyncHttpResponseHandler handler, String screenName) {
@@ -71,6 +121,11 @@ public class TwitterClient extends OAuthBaseClient {
 		client.get(apiUrl, params, handler);
 	}
 	
+	public void verifyCredentials(AsyncHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("account/verify_credentials.json");
+		client.get(apiUrl, null, handler);
+	}
+	
 	public void postStatus(AsyncHttpResponseHandler handler, String status) {
 		String apiUrl = getApiUrl("statuses/update.json");
 		RequestParams params = null;
@@ -80,5 +135,69 @@ public class TwitterClient extends OAuthBaseClient {
 		}
 		client.post(apiUrl, params, handler);
 	}
+	
+	public void createFavorite(AsyncHttpResponseHandler handler, Long id) {
+		String apiUrl = getApiUrl("favorites/create.json");
+		if (id != null && id >= 0) {
+			RequestParams params = null;
+			params = new RequestParams();
+			params.put("id", Long.toString(id));
+			client.post(apiUrl, params, handler);
+		}
+	}
+	
+	public void destroyFavorite(AsyncHttpResponseHandler handler, Long id) {
+		String apiUrl = getApiUrl("favorites/destroy.json");
+		if (id != null && id >= 0) {
+			RequestParams params = null;
+			params = new RequestParams();
+			params.put("id", Long.toString(id));
+			client.post(apiUrl, params, handler);
+		}
+	}
 
+	public void createRetweet(AsyncHttpResponseHandler handler, Long id) {
+		if (id != null && id >= 0) {
+			String apiUrl = getApiUrl("statuses/retweet/" + id + ".json");
+			client.post(apiUrl, handler);
+		}
+	}
+	
+
+	public void getStatus(AsyncHttpResponseHandler handler, Long id) {
+		String apiUrl = getApiUrl("statuses/show.json");
+		if (id != null && id >= 0) {
+			RequestParams params = null;
+			params = new RequestParams();
+			params.put("id", Long.toString(id));
+			client.get(apiUrl, params, handler);
+		}
+	}
+	
+	public void getFollowersList(AsyncHttpResponseHandler handler, Long cursor, Long id) {
+		String apiUrl = getApiUrl("followers/list.json");
+		if (id != null && id >= 0) {
+			RequestParams params = null;
+			params = new RequestParams();
+			params.put("id", Long.toString(id));
+			params.put("cursor", Long.toString(cursor));
+			client.get(apiUrl, params, handler);
+		}
+	}
+	
+	
+	public void getFriendsList(AsyncHttpResponseHandler handler, Long cursor, Long id) {
+		String apiUrl = getApiUrl("friends/list.json");
+		if (id != null && id >= 0) {
+			RequestParams params = null;
+			params = new RequestParams();
+			params.put("id", Long.toString(id));
+			params.put("cursor", Long.toString(cursor));
+			client.get(apiUrl, params, handler);
+		}
+	}
+	
+	
+	
+	
 }

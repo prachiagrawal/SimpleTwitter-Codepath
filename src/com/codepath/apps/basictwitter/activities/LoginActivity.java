@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.Window;
 
 import com.codepath.apps.basictwitter.R;
 import com.codepath.apps.basictwitter.helpers.TwitterClient;
@@ -14,6 +15,7 @@ public class LoginActivity extends OAuthLoginActivity<TwitterClient> {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS); 
 		setContentView(R.layout.activity_login);
 	}
 
@@ -28,6 +30,7 @@ public class LoginActivity extends OAuthLoginActivity<TwitterClient> {
 	// i.e Display application "homepage"
 	@Override
 	public void onLoginSuccess() {
+        setProgressBarIndeterminateVisibility(true); 
 		 Intent i = new Intent(this, TimelineActivity.class);
 		 startActivity(i);
 	}
@@ -37,12 +40,14 @@ public class LoginActivity extends OAuthLoginActivity<TwitterClient> {
 	@Override
 	public void onLoginFailure(Exception e) {
 		e.printStackTrace();
+        setProgressBarIndeterminateVisibility(true); 
 	}
 
 	// Click handler method for the button used to start OAuth flow
 	// Uses the client to initiate OAuth authorization
 	// This should be tied to a button used to login
 	public void loginToRest(View view) {
+        setProgressBarIndeterminateVisibility(true); 
 		getClient().connect();
 	}
 

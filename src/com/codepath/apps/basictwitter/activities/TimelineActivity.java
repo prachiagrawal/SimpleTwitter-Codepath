@@ -1,106 +1,77 @@
 package com.codepath.apps.basictwitter.activities;
 
-import java.util.ArrayList;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
+import android.view.Window;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 
 import com.codepath.apps.basictwitter.R;
 import com.codepath.apps.basictwitter.TwitterApplication;
-import com.codepath.apps.basictwitter.adapters.TweetArrayAdapter;
+import com.codepath.apps.basictwitter.activities.listeners.FragmentTabListener;
 import com.codepath.apps.basictwitter.fragments.ComposeTweetFragment;
 import com.codepath.apps.basictwitter.fragments.ComposeTweetFragment.ComposeTweetDialogListener;
-import com.codepath.apps.basictwitter.helpers.EndlessScrollListener;
+import com.codepath.apps.basictwitter.fragments.HomeTimelineFragment;
+import com.codepath.apps.basictwitter.fragments.MentionsTimelineFragment;
+import com.codepath.apps.basictwitter.fragments.TweetsListFragment.ShowTweetDetailListener;
+import com.codepath.apps.basictwitter.helpers.MemberIdentityHelper;
 import com.codepath.apps.basictwitter.helpers.NetworkUtils;
 import com.codepath.apps.basictwitter.helpers.TwitterClient;
-import com.codepath.apps.basictwitter.models.SavedTweet;
-import com.codepath.apps.basictwitter.models.SavedUser;
-import com.loopj.android.http.JsonHttpResponseHandler;
+import com.codepath.apps.basictwitter.models.Tweet;
 
-import eu.erikw.PullToRefreshListView;
-import eu.erikw.PullToRefreshListView.OnRefreshListener;
-
-public class TimelineActivity extends FragmentActivity implements ComposeTweetDialogListener {
+public class TimelineActivity extends FragmentActivity 
+implements ComposeTweetDialogListener, ShowTweetDetailListener {
 	private TwitterClient client;
-	private ArrayList<SavedTweet> _tweets;
-	private ArrayAdapter<SavedTweet> aTweets;
-	private PullToRefreshListView lvTweets;
-	private SavedUser user;
-		
-	private long _latestTweetId = -1;
-	private long _oldestTweetId = -1;
-		
+	private MemberIdentityHelper memberIdentityHelper;
+	private SearchView svQuery;
+	
+	private final int DETAIL_REQUEST_CODE = 100;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS); 
 		setContentView(R.layout.activity_timeline);
 		client = TwitterApplication.getRestClient();
-		lvTweets = (PullToRefreshListView) findViewById(R.id.lvTweets);
-		_tweets = new ArrayList<SavedTweet>();
-		aTweets = new TweetArrayAdapter(this, _tweets);
-		lvTweets.setAdapter(aTweets);
-		
-		fetchPersonalInformation();
-
-		lvTweets.setOnScrollListener(new EndlessScrollListener() {
-			@Override
-			public void onLoadMore(int page, int totalItemsCount) {
-                customLoadMoreDataFromApi(page, totalItemsCount);
-			}
-		});
-		
-		// Set a listener to be invoked when the list should be refreshed.
-        lvTweets.setOnRefreshListener(new OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-            	if (!NetworkUtils.isNetworkAvailable((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE))) {
-        			NetworkUtils.showInternetMissingError(getApplication());
-            		lvTweets.onRefreshComplete();
-            		return;
-            	}
-                // Make sure you call listView.onRefreshComplete() when
-                // once the network request has completed successfully.
-        		if (_tweets != null && _tweets.size() != 0) {
-        			_latestTweetId = _tweets.get(0).getTweetId();
-        		}
-            	populateTimeline(_latestTweetId, null);
-            }
-        });
-        
-        lvTweets.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				showDetailView(position);
-			}
-		});
-	}
-	
-	protected void showDetailView(int position) {
-		Intent i = new Intent(this, TweetDetailActivity.class);
-		i.putExtra("tweet", _tweets.get(position));
-		i.putExtra("user", user);
-		startActivity(i);
+		memberIdentityHelper = new MemberIdentityHelper(client);
+		memberIdentityHelper.verifyCredentials(getApplicationContext());
+		setupTabs();
 	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.timeline, menu);
+		MenuItem searchItem = menu.findItem(R.id.action_search);
+		svQuery = (SearchView) searchItem.getActionView();
+
+		svQuery.setOnQueryTextListener(new OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				// perform query here
+				if (query != null && !query.isEmpty()) {
+					Intent i = new Intent(TimelineActivity.this, SearchActivity.class);
+					i.putExtra("searchQuery", query);
+					startActivity(i);
+				}
+				return true;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				return false;
+			}
+		});
         return true;
 	}
 	
@@ -109,132 +80,117 @@ public class TimelineActivity extends FragmentActivity implements ComposeTweetDi
 	    // Handle presses on the action bar items
 	    switch (item.getItemId()) {
 	        case R.id.miCompose:
-	        	composeTweet(user);
+	        	composeTweet();
+	            return true;
+	        case R.id.miProfile:
+	        	viewProfile();
 	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
 	
-	private void customLoadMoreDataFromApi(int page, int totalItemsCount) {
-		if (_tweets != null && _tweets.size() != 0) {
-			_oldestTweetId = _tweets.get(_tweets.size() - 1).getTweetId();
-		}
-		if (!NetworkUtils.isNetworkAvailable((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE))) {
-			populateTimeline(_oldestTweetId);
-			return;
-    	}
-		populateTimeline(null, _oldestTweetId);
-	}
-	
-	private void populateTimeline(Long maxId) {
-		ArrayList<SavedTweet> tweets = (ArrayList<SavedTweet>) SavedTweet.getPaginatedList(maxId);
-		if (tweets != null && !tweets.isEmpty()) {
-			_tweets.addAll(tweets);
-			aTweets.notifyDataSetChanged();	
-		} else {
+	private void composeTweet() {
+		if (!NetworkUtils.isNetworkAvailable((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE))) {
 			NetworkUtils.showInternetMissingError(getApplication());
+			return;
 		}
-	}
-	
-	private void populateTimeline(Long sinceId, Long maxId) {
-		client.getHomeTimeline(new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONArray jsonArray) {
-				ArrayList<SavedTweet> tweets = SavedTweet.fromJson(jsonArray);	
-				//SavedUser.saveAll(tweets); // Persist for using when there is no internet connection
-				//SavedTweet.saveAll(tweets); // Persist for using when there is no internet connection
-
-				if (tweets != null && !tweets.isEmpty()) {
-					if (_tweets == null || _tweets.size() == 0 ||
-					    (_tweets.get(_tweets.size() - 1).getTweetId() > tweets.get(0).getTweetId())) {
-						// If this is the first load, or
-						// If the oldest (bottom most) tweet in the listview happened after the
-						// first tweet in the new list, append the new list at the end
-						aTweets.addAll(tweets);
-					} else if (_tweets.get(0).getTweetId() < tweets.get(tweets.size() - 1).getTweetId()) {
-						// If the newest (topmost) tweet already in the listview happened before the
-						// last tweet in the new list, insert the new list at the beginning
-						_tweets.addAll(0, tweets);
-						aTweets.notifyDataSetChanged();
-					}
-					// else looks like a duplicate fetch. Discard.
-				}
-				
-				lvTweets.onRefreshComplete();
-			}
-			
-			@Override
-			public void onFailure(Throwable e, String s) {
-				Log.d("DEBUG", e.toString());
-				Log.d("DEBUG", s);
-			}
-		}, sinceId, maxId);
-	}
-	
-	private void fetchPersonalInformation() {
-		client.getPersonalSettings(new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONObject json) {
-				try {
-					String screenName = json.getString("screen_name");
-					fetchPersonalInformation(screenName);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			@Override
-			public void onFailure(Throwable e, String s) {
-				Log.d("DEBUG", e.toString());
-				Log.d("DEBUG", s);
-			}
-		});
-	}
-	
-	private void fetchPersonalInformation(String screenName) {
-		client.getUser(new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONObject json) {
-				user = SavedUser.fromJson(json);
-			}
-			
-			@Override
-			public void onFailure(Throwable e, String s) {
-				Log.d("DEBUG", e.toString());
-				Log.d("DEBUG", s);
-			}
-		}, screenName);
-	}
-	
-	private void composeTweet(SavedUser user) {
 		FragmentManager fm = getSupportFragmentManager();
-		ComposeTweetFragment composeTweetDialog = ComposeTweetFragment.newInstance(
-				user.getProfileImageUrl(), user.getName(), user.getScreenName(), null);
+		ComposeTweetFragment composeTweetDialog = ComposeTweetFragment.newInstance(null);
 		composeTweetDialog.show(fm, "fragment_compose_tweet");
 	}
 
 	@Override
 	public void onFinishComposeDialog(String inputText) {
-	  	client.postStatus(new JsonHttpResponseHandler() {
-	  		@Override
-	  		public void onSuccess(JSONObject json) {
-	  			if (!NetworkUtils.isNetworkAvailable((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE))) {
-	  				NetworkUtils.showInternetMissingError(getApplication());
-	  				return;
-	  			}
-	  			SavedTweet tweet = SavedTweet.fromJson(json);
-	  			if (_tweets != null && _tweets.size() != 0) {
-        			_latestTweetId = _tweets.get(0).getTweetId();
-        		}
-	  			populateTimeline(_latestTweetId, tweet.getTweetId()+1);
-	  		}
-	  		
-			@Override
-			public void onFailure(Throwable e, String s) {
-				Log.d("DEBUG", e.toString());
-				Log.d("DEBUG", s);
-			}
-	  	}, inputText);
+		HomeTimelineFragment frag = (HomeTimelineFragment) getSupportFragmentManager().findFragmentByTag("home");
+		frag.composeTweet(inputText);
 	}
+
+	public void showDetailView(Tweet tweet, int position) {
+		Intent i = new Intent(this, TweetDetailActivity.class);
+		i.putExtra("tweet", tweet);
+		i.putExtra("position", position);
+		startActivityForResult(i, DETAIL_REQUEST_CODE);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode == RESULT_OK && requestCode == DETAIL_REQUEST_CODE && data != null) {
+			long tweetId = data.getExtras().getLong("tweetId");
+			int position = data.getExtras().getInt("position");
+  			HomeTimelineFragment frag = (HomeTimelineFragment) getSupportFragmentManager().findFragmentByTag("home");
+  			frag.refreshTweetAtIndex(tweetId, position);
+		} else if (requestCode == DETAIL_REQUEST_CODE) {
+			SharedPreferences pref =   
+				    PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			long tweetId = pref.getLong("tweetId", 0);
+			int position = pref.getInt("position", 0);
+  			HomeTimelineFragment frag = (HomeTimelineFragment) getSupportFragmentManager().findFragmentByTag("home");
+  			frag.refreshTweetAtIndex(tweetId, position);			
+		}
+	}
+	
+	private void viewProfile() {
+		if (!NetworkUtils.isNetworkAvailable((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE))) {
+			NetworkUtils.showInternetMissingError(getApplication());
+			return;
+		}
+		
+		SharedPreferences pref =   
+			    PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		long userId = pref.getLong(MemberIdentityHelper.USER_ID, 0);
+		showProfileView(userId);
+	}
+	
+	private void setupTabs() {
+		ActionBar actionBar = getActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		actionBar.setDisplayShowTitleEnabled(true);
+
+		Tab tab1 = actionBar
+			.newTab()
+			.setText("Home")
+			//.setIcon(R.drawable.ic_home)
+			.setTag("HomeTimelineFragment")
+			.setTabListener(
+				new FragmentTabListener<HomeTimelineFragment>(R.id.flTweetListContainer, this, "home", HomeTimelineFragment.class));
+
+		actionBar.addTab(tab1);
+		actionBar.selectTab(tab1);
+
+		Tab tab2 = actionBar
+			.newTab()
+			.setText("Mentions")
+			//.setIcon(R.drawable.ic_mentions)
+			.setTag("MentionsTimelineFragment")
+			.setTabListener(
+			    new FragmentTabListener<MentionsTimelineFragment>(R.id.flTweetListContainer, this, "mentions", MentionsTimelineFragment.class));
+
+		actionBar.addTab(tab2);
+	}
+
+	private void showProfileView(Long userId) {
+		Intent i = new Intent(this, ProfileActivity.class);
+		i.putExtra("userId", userId);
+		startActivity(i);		
+	}
+	
+	public void onClickProfileView(View view) {
+		Long userId = (Long) view.getTag();
+		showProfileView(userId);
+	}
+		
+	/*
+	public void onClickReplyIcon(View view) {
+		TextView tweet = (TextView) ((View) view.getParent()).findViewById(R.id.tvBody);
+		TextView user = (TextView) ((View) view.getParent()).findViewById(R.id.tvUserScreenName);
+
+		String text = tweet.getText().toString();
+		String userName = user.getText().toString();
+		String[] handles = EditTweetUtils.extractHandles(text, userName);
+		FragmentManager fm = getSupportFragmentManager();
+		ComposeTweetFragment composeTweetDialog = ComposeTweetFragment.newInstance(handles);
+		composeTweetDialog.show(fm, "fragment_compose_tweet");	
+		}
+		*/
 }

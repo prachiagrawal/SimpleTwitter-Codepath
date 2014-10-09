@@ -1,6 +1,8 @@
 package com.codepath.apps.basictwitter.fragments;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codepath.apps.basictwitter.R;
+import com.codepath.apps.basictwitter.helpers.MemberIdentityHelper;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class ComposeTweetFragment extends DialogFragment implements TextWatcher {
@@ -30,13 +33,9 @@ public class ComposeTweetFragment extends DialogFragment implements TextWatcher 
 		// Empty constructor required for DialogFragment
 	}
 	
-	public static ComposeTweetFragment newInstance(String profileUrl, 
-			String userProfileName, String userScreenName, String[] rtHandles) {
+	public static ComposeTweetFragment newInstance(String[] rtHandles) {		
 		ComposeTweetFragment frag = new ComposeTweetFragment();
 		Bundle args = new Bundle();
-		args.putString("url", profileUrl);
-		args.putString("profileName", userProfileName);
-		args.putString("screenName", userScreenName);
 		args.putStringArray("rtHandles", rtHandles);
 		frag.setArguments(args);
 		return frag;
@@ -59,9 +58,12 @@ public class ComposeTweetFragment extends DialogFragment implements TextWatcher 
 		tvCharCount = (TextView) view.findViewById(R.id.tvCharCount);
 		tvCharCount.setText("140");
 		
-		String url = getArguments().getString("url", "");
-		String profileName = getArguments().getString("profileName", "");
-		String screenName = getArguments().getString("screenName", "");
+		SharedPreferences pref =   
+			    PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+		String url = pref.getString(MemberIdentityHelper.USER_PROFILE_IMAGE_URL, "");
+		String profileName = pref.getString(MemberIdentityHelper.USER_NAME, "");
+		String screenName = pref.getString(MemberIdentityHelper.USER_SCREEN_NAME, "");
+		
 		String[] rtHandles = getArguments().getStringArray("rtHandles");
 
 		ImageLoader imageLoader = ImageLoader.getInstance();
